@@ -18,4 +18,6 @@ Example usage:
 
 Install with `go get github.com/richardlehane/msoleps`
 
+*I'm being developed and am not yet ready...*
+
 [![Build Status](https://travis-ci.org/richardlehane/msoleps.png?branch=master)](https://travis-ci.org/richardlehane/msoleps)
