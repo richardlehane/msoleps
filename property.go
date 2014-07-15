@@ -25,9 +25,10 @@ type PropertyIdentifierAndOffset struct {
 }
 
 type Property struct {
-	name string
-	sz   int
-	raw  []byte
+	fmtid types.Guid
+	name  string
+	sz    int
+	raw   []byte
 	types.Type
 }
 

@@ -10,7 +10,7 @@ Example usage:
     }
     for entry, err := doc.Next(); err == nil; entry, err = doc.Next() {
       if msoleps.IsMSOLEPS(doc.Initial()) {
-        for prop, oerr = entry.Next(); oerr == nil; prop, oerr = entry.Next() {
+        for prop, oerr = entry.Read(); oerr == nil; prop, oerr = entry.Read() {
           fmt.Println(prop.Name)
         }
       }

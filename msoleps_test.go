@@ -18,7 +18,7 @@ func testFile(t *testing.T, path string) {
 	if err != nil {
 		t.Errorf("Error opening file; Returns error: ", err)
 	}
-	for prop, _ := doc.Next(); entry != nil; entry, _ = doc.Next() {
+	for prop, _ := doc.Read(); prop != nil; prop, _ = doc.Read() {
 
 	}
 

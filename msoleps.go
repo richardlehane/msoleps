@@ -1,6 +1,7 @@
 package msoleps
 
 import (
+	"encoding/binary"
 	"errors"
 	"io"
 
@@ -73,4 +74,5 @@ func (r *Reader) Read() (*Property, error) {
 
 		}
 	}
+	return nil, nil
 }
