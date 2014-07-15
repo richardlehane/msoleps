@@ -1,5 +1,7 @@
 package sets
 
+import "github.com/richardlehane/msoleps/types"
+
 var SummaryInformation = PropertySetDef{
 	types.MustGuidFromString("{F29F85E0-4FF9-1068-AB91-08002B27B3D9}"),
 	[]IDName{
