@@ -51,7 +51,7 @@ func (r *Reader) Reset(rdr io.Reader) error {
 	return r.start(rdr)
 }
 
-func ReadFrom(rdr io.Reader) (*Reader, error) {
+func NewFrom(rdr io.Reader) (*Reader, error) {
 	r := &Reader{}
 	r.b = &bytes.Buffer{}
 	return r, r.start(rdr)

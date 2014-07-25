@@ -14,7 +14,7 @@ var (
 func testFile(t *testing.T, path string) {
 	file, _ := os.Open(path)
 	defer file.Close()
-	doc, err := New(file)
+	doc, err := NewFrom(file)
 	if err != nil {
 		t.Errorf("Error opening file; Returns error: ", err)
 	}
