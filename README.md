@@ -8,9 +8,13 @@ Example usage:
     if err != nil {
       log.Fatal(err)
     }
+    props := msoleps.New()
     for entry, err := doc.Next(); err == nil; entry, err = doc.Next() {
-      if msoleps.IsMSOLEPS(doc.Initial()) {
-        for prop, oerr = entry.Read(); oerr == nil; prop, oerr = entry.Read() {
+      if msoleps.IsMSOLEPS(entry.Initial()) {
+        if oerr := props.Reset(doc); oerr != nil {
+          log.Fatal(oerr)
+        }
+        for prop, rerr = props.Read(); rerr == nil; prop, rerr = props.Read() {
           fmt.Println(prop.Name)
         }
       }

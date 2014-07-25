@@ -40,15 +40,21 @@ type Reader struct {
 	idsOffs    []PropertyIdentifierAndOffset
 }
 
-func New(rdr io.Reader) (*Reader, error) {
+func New() *Reader {
 	r := &Reader{}
 	r.b = &bytes.Buffer{}
-	return r, r.start(rdr)
+	return r
 }
 
 func (r *Reader) Reset(rdr io.Reader) error {
 	r.b.Reset()
 	return r.start(rdr)
+}
+
+func ReadFrom(rdr io.Reader) (*Reader, error) {
+	r := &Reader{}
+	r.b = &bytes.Buffer{}
+	return r, r.start(rdr)
 }
 
 func (r *Reader) start(rdr io.Reader) error {
