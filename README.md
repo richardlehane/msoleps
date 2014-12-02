@@ -10,11 +10,11 @@ Example usage:
     }
     props := msoleps.New()
     for entry, err := doc.Next(); err == nil; entry, err = doc.Next() {
-      if msoleps.IsMSOLEPS(entry.Initial()) {
+      if msoleps.IsMSOLEPS(entry.Initial) {
         if oerr := props.Reset(doc); oerr != nil {
           log.Fatal(oerr)
         }
-        for prop, rerr = props.Read(); rerr == nil; prop, rerr = props.Read() {
+        for prop, rerr := props.Read(); rerr == nil; prop, rerr = props.Read() {
           fmt.Println(prop.Name)
         }
       }
