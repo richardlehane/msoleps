@@ -1,17 +1,36 @@
 package types
 
+import (
+	"encoding/binary"
+	"errors"
+)
+
+var (
+	ErrType        = errors.New("msoleps: error coercing byte stream to type")
+	ErrUnknownType = errors.New("msoleps: unknown type error")
+)
+
+func Evaluate(b []byte) (Type, error) {
+	if len(b) < 4 {
+		return Integer8(0), ErrType
+	}
+	id := TypeID(binary.LittleEndian.Uint16(b[:2]))
+	f, ok := MakeTypes[id]
+	if !ok {
+		return Integer8(0), ErrType
+	}
+	return f(b[4:])
+}
+
 type Type interface {
 	String() string
 	Type() string
 }
 
-type TypedProp struct {
-	Val uint16
-	_   uint16 // padding
-}
+type TypeID uint16
 
 const (
-	VT_EMPTY uint16 = iota // 0x0000
+	VT_EMPTY TypeID = iota // 0x0000
 	VT_NULL
 	VT_I2
 	VT_I4
@@ -49,3 +68,13 @@ const (
 	VT_CLSID
 	VT_VERSIONED_STREAM // 0x0049
 )
+
+type MakeType func([]byte) (Type, error)
+
+var MakeTypes map[TypeID]MakeType = map[TypeID]MakeType{
+	VT_CY:       MakeCurrency,
+	VT_DATE:     MakeDate,
+	VT_DECIMAL:  MakeDecimal,
+	VT_FILETIME: MakeFileTime,
+	VT_CLSID:    MakeGuid,
+}

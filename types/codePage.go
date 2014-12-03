@@ -1,11 +1,11 @@
 package types
 
-type CodePageID uint16
-
 // A CodePage String is size followed by values, followed by padding. The value should specify number of chars excluding padding. The padding must make the value field total 4 bytes.
 // Values are 8-bit for a codepage string
 
 type CodePageSize uint32
+
+type CodePageID uint16
 
 var CodePageIDs map[CodePageID]string = map[CodePageID]string{
 	37:    "IBM037 - IBM EBCDIC US-Canada",

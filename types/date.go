@@ -1,6 +1,9 @@
 package types
 
-import "time"
+import (
+	"encoding/binary"
+	"time"
+)
 
 // http://msdn.microsoft.com/en-us/library/cc237601.aspx
 type Date float64
@@ -14,4 +17,15 @@ func (d Date) Time() time.Time {
 
 func (d Date) String() string {
 	return d.Time().String()
+}
+
+func (d Date) Type() string {
+	return "Date"
+}
+
+func MakeDate(b []byte) (Type, error) {
+	if len(b) < 8 {
+		return Date(0), ErrType
+	}
+	return Date(binary.LittleEndian.Uint64(b[:8])), nil
 }

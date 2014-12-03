@@ -1,6 +1,9 @@
 package types
 
-import "time"
+import (
+	"encoding/binary"
+	"time"
+)
 
 // Win FILETIME type
 // http://msdn.microsoft.com/en-us/library/cc230324.aspx
@@ -32,4 +35,14 @@ func (f FileTime) String() string {
 
 func (f FileTime) Type() string {
 	return "FileTime"
+}
+
+func MakeFileTime(b []byte) (Type, error) {
+	if len(b) < 8 {
+		return FileTime{}, ErrType
+	}
+	return FileTime{
+		Low:  binary.LittleEndian.Uint32(b[:4]),
+		High: binary.LittleEndian.Uint32(b[4:8]),
+	}, nil
 }

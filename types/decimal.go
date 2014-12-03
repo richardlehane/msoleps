@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/binary"
 	"math"
 	"math/big"
 )
@@ -30,4 +31,17 @@ func (d Decimal) String() string {
 		r.Neg(r)
 	}
 	return r.FloatString(20)
+}
+
+func MakeDecimal(b []byte) (Type, error) {
+	if len(b) < 16 {
+		return Decimal{}, ErrType
+	}
+	return Decimal{
+		res:    [2]byte{b[0], b[1]},
+		scale:  b[2],
+		sign:   b[3],
+		high32: binary.LittleEndian.Uint32(b[4:8]),
+		low64:  binary.LittleEndian.Uint64(b[8:16]),
+	}, nil
 }

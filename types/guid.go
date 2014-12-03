@@ -34,6 +34,10 @@ func (g Guid) String() string {
 		"}")
 }
 
+func (g Guid) Type() string {
+	return "Guid"
+}
+
 func GuidFromString(str string) (Guid, error) {
 	gerr := "Invalid GUID: expecting in format {F29F85E0-4FF9-1068-AB91-08002B27B3D9}, got " + str
 	if len(str) != 38 {
@@ -48,14 +52,18 @@ func GuidFromString(str string) (Guid, error) {
 	if err != nil {
 		return Guid{}, errors.New(gerr + "; error decoding hex: " + err.Error())
 	}
+	return makeGuid(buf, binary.BigEndian), nil
+}
+
+func makeGuid(b []byte, order binary.ByteOrder) Guid {
 	g := Guid{
-		binary.BigEndian.Uint32(buf[:4]),
-		binary.BigEndian.Uint16(buf[4:6]),
-		binary.BigEndian.Uint16(buf[6:8]),
-		[8]byte{},
+		DataA: order.Uint32(b[:4]),
+		DataB: order.Uint16(b[4:6]),
+		DataC: order.Uint16(b[6:8]),
+		DataD: [8]byte{},
 	}
-	copy(g.DataD[:], buf[8:])
-	return g, nil
+	copy(g.DataD[:], b[8:])
+	return g
 }
 
 func MustGuidFromString(str string) Guid {
@@ -64,4 +72,11 @@ func MustGuidFromString(str string) Guid {
 		panic(err)
 	}
 	return g
+}
+
+func MakeGuid(b []byte) (Type, error) {
+	if len(b) < 16 {
+		return Guid{}, ErrType
+	}
+	return makeGuid(b, binary.LittleEndian), nil
 }
