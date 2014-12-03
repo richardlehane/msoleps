@@ -7,7 +7,7 @@ type CodePageID uint16
 
 type CodePageSize uint32
 
-var CodePageIDs map[uint16]string = map[uint16]string{
+var CodePageIDs map[CodePageID]string = map[CodePageID]string{
 	37:    "IBM037 - IBM EBCDIC US-Canada",
 	437:   "IBM437 - OEM United States",
 	500:   "IBM500 - IBM EBCDIC International",

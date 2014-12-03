@@ -5,6 +5,11 @@ type Type interface {
 	Type() string
 }
 
+type TypedProp struct {
+	Val uint16
+	_   uint16 // padding
+}
+
 const (
 	VT_EMPTY uint16 = iota // 0x0000
 	VT_NULL
@@ -44,8 +49,3 @@ const (
 	VT_CLSID
 	VT_VERSIONED_STREAM // 0x0049
 )
-
-type TypedProp struct {
-	Val     uint16
-	padding uint16
-}

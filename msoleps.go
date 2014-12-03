@@ -24,20 +24,14 @@ func IsMSOLEPS(i uint16) bool {
 }
 
 type Reader struct {
-	b *bytes.Buffer
-	r *bytes.Reader
-	// indexes
-	i    int // place in stream
-	psi  int // place in Property Set
-	ps   int // index of property set
-	prop int // index of current property
-	// common data
-	dict map[uint32]string
-	code types.CodePageID
-	// loaded data
-	pSetStream *PropertySetStream
-	pSet       *PropertySet
-	idsOffs    []PropertyIdentifierAndOffset
+	Property []*Property
+	CLSID    types.Guid
+	SystemID uint32
+
+	b          *bytes.Buffer
+	buf        []byte
+	pSetStream *propertySetStream
+	pSets      [2]*propertySet
 }
 
 func New() *Reader {
@@ -61,10 +55,10 @@ func (r *Reader) start(rdr io.Reader) error {
 	if _, err := r.b.ReadFrom(rdr); err != nil {
 		return ErrRead
 	}
-	r.r = bytes.NewReader(r.b.Bytes())
+	r.buf = r.b.Bytes()
 	// read the header (property stream details)
-	r.pSetStream = &PropertySetStream{}
-	if err := binary.Read(r.r, binary.LittleEndian, r.pSetStream); err != nil {
+	r.pSetStream = &propertySetStream{}
+	if err := binary.Read(r.b, binary.LittleEndian, r.pSetStream); err != nil {
 		return ErrRead
 	}
 	// sanity checks to find obvious errors
@@ -72,63 +66,45 @@ func (r *Reader) start(rdr io.Reader) error {
 	case r.pSetStream.ByteOrder != 0xFFFE, r.pSetStream.Version > 0x0001, r.pSetStream.NumPropertySets > 0x00000002:
 		return ErrFormat
 	}
-	r.i = 17 * 4
 	// identify the property identifiers and offsets
-	if err := r.setIdsOffs(); err != nil {
+	ps, err := r.getPropertySet(r.pSetStream.OffsetA)
+	if err != nil {
 		return err
 	}
+	plen := len(ps.idsOffs)
+	r.pSets[0] = ps
+	if r.pSetStream.NumPropertySets == 2 {
+		psb, err := r.getPropertySet(r.pSetStream.OffsetB)
+		if err != nil {
+			return err
+		}
+		r.pSets[1] = psb
+		plen += len(psb.idsOffs)
+	}
+	r.Property = make([]*Property, plen)
 	return nil
 }
 
-func (r *Reader) setIdsOffs() error {
-	r.pSet = &PropertySet{}
-	if err := binary.Read(r.r, binary.LittleEndian, r.pSet); err != nil {
-		return ErrRead
-	}
-	r.idsOffs = make([]PropertyIdentifierAndOffset, int(r.pSet.NumProperties))
-	if err := binary.Read(r.r, binary.LittleEndian, r.idsOffs); err != nil {
-		return ErrRead
-	}
-	// set dictionary and codepage if present
-	var dictIdx, codeIdx int
-	var dictPres, codePres bool
-	for i, v := range r.idsOffs {
-		if v.PropertyIdentifier == 0x00000000 {
-			dictIdx = i
-			dictPres = true
-		}
-		if v.PropertyIdentifier == 0x00000001 {
-			codeIdx = i
-			codePres = true
+func (r *Reader) getPropertySet(o uint32) (*propertySet, error) {
+	pSet := &propertySet{}
+	pSet.size = binary.LittleEndian.Uint32(r.buf[int(o) : int(o)+4])
+	pSet.numProperties = binary.LittleEndian.Uint32(r.buf[int(o)+4 : int(o)+8])
+	pSet.idsOffs = make([]propertyIDandOffset, int(pSet.numProperties))
+	var dictOff uint32
+	for i := range pSet.idsOffs {
+		this := i*8 + 8 + int(o)
+		pSet.idsOffs[i].id = binary.LittleEndian.Uint32(r.buf[this : this+4])
+		pSet.idsOffs[i].offset = binary.LittleEndian.Uint32(r.buf[this+4 : this+8])
+		switch pSet.idsOffs[i].id {
+		case 0x00000000:
+			dictOff = pSet.idsOffs[i].offset
+		case 0x00000001:
+			off := int(pSet.idsOffs[i].offset + o)
+			pSet.code = types.CodePageID(binary.LittleEndian.Uint16(r.buf[off : off+2]))
 		}
 	}
-	if codePres {
-		codeIdx++ // just letting it compile
+	if dictOff > 0 {
+		dictOff++ // just letting it compile - unfinished bit
 	}
-	if dictPres {
-		dictIdx++ // just letting it compile - unfinished bit
-	}
-	// increment the read index by length of the IdsOffs slice
-	r.psi = len(r.idsOffs)*8 + 8
-	r.i += r.psi
-	return nil
-}
-
-func (r *Reader) Read() (*Property, error) {
-	// check if we have we reached the end of our list of properties
-	if r.prop >= len(r.idsOffs) {
-		// check if there is a second property set in the stream
-		if int(r.pSetStream.NumPropertySets)-1 > r.ps {
-			r.ps++
-			r.prop = 0
-			r.i = int(r.pSetStream.OffsetB)
-			if err := r.setIdsOffs(); err != nil {
-				return nil, err
-			}
-		} else {
-			return nil, io.EOF
-		}
-	}
-
-	return nil, nil
+	return pSet, nil
 }

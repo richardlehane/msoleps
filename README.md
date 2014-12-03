@@ -14,8 +14,8 @@ Example usage:
         if oerr := props.Reset(doc); oerr != nil {
           log.Fatal(oerr)
         }
-        for prop, rerr := props.Read(); rerr == nil; prop, rerr = props.Read() {
-          fmt.Println(prop.Name)
+        for prop := range props.Property {
+          fmt.Printf("Name: %s; Type: %s; Value: %v", prop.Name, prop.Type(), prop)
         }
       }
     }
