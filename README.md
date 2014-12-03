@@ -1,4 +1,4 @@
-A reader for Microsoft's OLE Property Set Format.
+A reader for Microsoft's [OLE Property Set Format](http://msdn.microsoft.com/en-au/library/dd942421.aspx).
 
 Example usage:
 
