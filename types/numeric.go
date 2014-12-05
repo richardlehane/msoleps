@@ -5,36 +5,198 @@ import (
 	"strconv"
 )
 
-type Integer8 byte
+type BOOL bool
 
-func (i Integer8) Type() string {
+func (i BOOL) Type() string {
+	return "Boolean"
+}
+
+func (i BOOL) String() string {
+	if i {
+		return "true"
+	}
+	return "false"
+}
+
+func MakeBOOL(b []byte) (Type, error) {
+	if len(b) < 2 {
+		return BOOL(false), ErrType
+	}
+	switch binary.LittleEndian.Uint16(b[:2]) {
+	case 0xFFFF:
+		return BOOL(true), nil
+	case 0x0000:
+		return BOOL(false), nil
+	}
+	return BOOL(false), ErrType
+}
+
+type I1 int8
+
+func (i I1) Type() string {
 	return "Int8"
 }
 
-func (i Integer8) String() string {
+func (i I1) String() string {
 	return strconv.Itoa(int(i))
 }
 
-func MakeInteger8(b []byte) (Type, error) {
+func MakeI1(b []byte) (Type, error) {
 	if len(b) < 1 {
-		return Integer8(0), ErrType
+		return I1(0), ErrType
 	}
-	return Integer8(b[0]), nil
+	return I1(b[0]), nil
 }
 
-type Integer16 int16
+type I2 int16
 
-func (i Integer16) Type() string {
+func (i I2) Type() string {
 	return "Int16"
 }
 
-func (i Integer16) String() string {
+func (i I2) String() string {
 	return strconv.Itoa(int(i))
 }
 
-func MakeInteger16(b []byte) (Type, error) {
+func MakeI2(b []byte) (Type, error) {
 	if len(b) < 2 {
-		return Integer16(0), ErrType
+		return I2(0), ErrType
 	}
-	return Integer16(binary.LittleEndian.Uint16(b[:2])), nil
+	return I2(binary.LittleEndian.Uint16(b[:2])), nil
+}
+
+type I4 int32
+
+func (i I4) Type() string {
+	return "Int32"
+}
+
+func (i I4) String() string {
+	return strconv.Itoa(int(i))
+}
+
+func MakeI4(b []byte) (Type, error) {
+	if len(b) < 4 {
+		return I4(0), ErrType
+	}
+	return I4(binary.LittleEndian.Uint32(b[:4])), nil
+}
+
+type I8 int64
+
+func (i I8) Type() string {
+	return "Int64"
+}
+
+func (i I8) String() string {
+	return strconv.FormatInt(int64(i), 10)
+}
+
+func MakeI8(b []byte) (Type, error) {
+	if len(b) < 8 {
+		return I8(0), ErrType
+	}
+	return I8(binary.LittleEndian.Uint64(b[:8])), nil
+}
+
+type UI1 uint8
+
+func (i UI1) Type() string {
+	return "Uint8"
+}
+
+func (i UI1) String() string {
+	return strconv.Itoa(int(i))
+}
+
+func MakeUI1(b []byte) (Type, error) {
+	if len(b) < 1 {
+		return UI1(0), ErrType
+	}
+	return UI1(b[0]), nil
+}
+
+type UI2 uint16
+
+func (i UI2) Type() string {
+	return "Uint16"
+}
+
+func (i UI2) String() string {
+	return strconv.Itoa(int(i))
+}
+
+func MakeUI2(b []byte) (Type, error) {
+	if len(b) < 2 {
+		return UI2(0), ErrType
+	}
+	return UI2(binary.LittleEndian.Uint16(b[:2])), nil
+}
+
+type UI4 uint32
+
+func (i UI4) Type() string {
+	return "Uint32"
+}
+
+func (i UI4) String() string {
+	return strconv.FormatUint(uint64(i), 10)
+}
+
+func MakeUI4(b []byte) (Type, error) {
+	if len(b) < 4 {
+		return UI4(0), ErrType
+	}
+	return UI4(binary.LittleEndian.Uint32(b[:4])), nil
+}
+
+type UI8 uint64
+
+func (i UI8) Type() string {
+	return "Uint64"
+}
+
+func (i UI8) String() string {
+	return strconv.FormatUint(uint64(i), 10)
+}
+
+func MakeUI8(b []byte) (Type, error) {
+	if len(b) < 8 {
+		return UI8(0), ErrType
+	}
+	return UI8(binary.LittleEndian.Uint64(b[:8])), nil
+}
+
+type R4 float32
+
+func (i R4) Type() string {
+	return "Float32"
+}
+
+func (i R4) String() string {
+	return strconv.FormatFloat(float64(i), 'f', -1, 32)
+}
+
+func MakeR4(b []byte) (Type, error) {
+	if len(b) < 4 {
+		return R4(0), ErrType
+	}
+	return R4(binary.LittleEndian.Uint32(b[:4])), nil
+}
+
+type R8 float64
+
+func (i R8) Type() string {
+	return "Float64"
+}
+
+func (i R8) String() string {
+	return strconv.FormatFloat(float64(i), 'f', -1, 64)
+}
+
+func MakeR8(b []byte) (Type, error) {
+	if len(b) < 8 {
+		return R8(0), ErrType
+	}
+	return R8(binary.LittleEndian.Uint64(b[:8])), nil
 }

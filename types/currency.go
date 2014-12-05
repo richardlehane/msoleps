@@ -10,7 +10,7 @@ import (
 type Currency int64
 
 func (c Currency) String() string {
-	return "$" + strconv.FormatFloat(float64(c)/10000, 'f', 4, 64)
+	return "$" + strconv.FormatFloat(float64(c)/10000, 'f', -1, 64)
 }
 
 func (c Currency) Type() string {

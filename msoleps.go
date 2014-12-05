@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 
+	"github.com/richardlehane/msoleps/sets"
 	"github.com/richardlehane/msoleps/types"
 )
 
@@ -82,6 +83,26 @@ func (r *Reader) start(rdr io.Reader) error {
 		plen += len(psb.idsOffs)
 	}
 	r.Property = make([]*Property, plen)
+	var dict map[uint32]string
+	if r.pSetStream.FmtidA == types.MustGuidFromString("{F29F85E0-4FF9-1068-AB91-08002B27B3D9}") {
+		dict = sets.SummaryInformation.Dict
+	} else {
+		dict = ps.dict
+		if dict == nil {
+			dict = make(map[uint32]string)
+		}
+	}
+	for i, v := range ps.idsOffs {
+		r.Property[i] = &Property{}
+		r.Property[i].Name = dict[v.id]
+		t, _ := types.Evaluate(r.buf[int(v.offset+r.pSetStream.OffsetA):])
+		if t.Type() == "CodeString" {
+			cs := t.(*types.CodeString)
+			cs.SetId(ps.code)
+			t = types.Type(cs)
+		}
+		r.Property[i].T = t
+	}
 	return nil
 }
 
@@ -100,7 +121,7 @@ func (r *Reader) getPropertySet(o uint32) (*propertySet, error) {
 			dictOff = pSet.idsOffs[i].offset
 		case 0x00000001:
 			off := int(pSet.idsOffs[i].offset + o)
-			pSet.code = types.CodePageID(binary.LittleEndian.Uint16(r.buf[off : off+2]))
+			pSet.code = types.CodePageID(binary.LittleEndian.Uint16(r.buf[off+4 : off+6]))
 		}
 	}
 	if dictOff > 0 {

@@ -1,6 +1,7 @@
 package msoleps
 
 import (
+	"fmt"
 	"os"
 	"testing"
 )
@@ -17,6 +18,9 @@ func testFile(t *testing.T, path string) *Reader {
 	doc, err := NewFrom(file)
 	if err != nil {
 		t.Errorf("Error opening file; Returns error: ", err)
+	}
+	for _, prop := range doc.Property {
+		fmt.Printf("%s: %s\n", prop.Name, prop)
 	}
 	return doc
 }

@@ -3,15 +3,16 @@ package msoleps
 import "github.com/richardlehane/msoleps/types"
 
 type Property struct {
-	Name  string
-	FMTID types.Guid
-	sz    int
-	raw   []byte
-	types.Type
+	Name string
+	T    types.Type
 }
 
-func (p *Property) Bytes() []byte {
-	return p.raw[:p.sz]
+func (p *Property) String() string {
+	return p.T.String()
+}
+
+func (p *Property) Type() string {
+	return p.T.Type()
 }
 
 type propertySetStream struct {

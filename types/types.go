@@ -10,21 +10,21 @@ var (
 	ErrUnknownType = errors.New("msoleps: unknown type error")
 )
 
+type Type interface {
+	String() string
+	Type() string
+}
+
 func Evaluate(b []byte) (Type, error) {
 	if len(b) < 4 {
-		return Integer8(0), ErrType
+		return I1(0), ErrType
 	}
 	id := TypeID(binary.LittleEndian.Uint16(b[:2]))
 	f, ok := MakeTypes[id]
 	if !ok {
-		return Integer8(0), ErrType
+		return I1(0), ErrUnknownType
 	}
 	return f(b[4:])
-}
-
-type Type interface {
-	String() string
-	Type() string
 }
 
 type TypeID uint16
@@ -72,9 +72,25 @@ const (
 type MakeType func([]byte) (Type, error)
 
 var MakeTypes map[TypeID]MakeType = map[TypeID]MakeType{
+	VT_I2:       MakeI2,
+	VT_I4:       MakeI4,
+	VT_R4:       MakeR4,
+	VT_R8:       MakeR8,
 	VT_CY:       MakeCurrency,
 	VT_DATE:     MakeDate,
+	VT_BSTR:     MakeCodeString,
+	VT_BOOL:     MakeBOOL,
 	VT_DECIMAL:  MakeDecimal,
+	VT_I1:       MakeI1,
+	VT_U1:       MakeUI1,
+	VT_UI2:      MakeUI2,
+	VT_UI4:      MakeUI4,
+	VT_I8:       MakeI8,
+	VT_UI8:      MakeUI8,
+	VT_INT:      MakeI4,
+	VT_UINT:     MakeUI4,
+	VT_LPSTR:    MakeCodeString,
+	VT_LPWSTR:   MakeUnicode,
 	VT_FILETIME: MakeFileTime,
 	VT_CLSID:    MakeGuid,
 }
