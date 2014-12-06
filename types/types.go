@@ -93,7 +93,7 @@ var MakeTypes map[TypeID]MakeType = map[TypeID]MakeType{
 	VT_CY:       MakeCurrency,
 	VT_DATE:     MakeDate,
 	VT_BSTR:     MakeCodeString,
-	VT_BOOL:     MakeBOOL,
+	VT_BOOL:     MakeBool,
 	VT_DECIMAL:  MakeDecimal,
 	VT_I1:       MakeI1,
 	VT_U1:       MakeUI1,

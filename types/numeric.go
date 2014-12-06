@@ -19,30 +19,30 @@ import (
 	"strconv"
 )
 
-type BOOL bool
+type Bool bool
 
-func (i BOOL) Type() string {
+func (i Bool) Type() string {
 	return "Boolean"
 }
 
-func (i BOOL) String() string {
+func (i Bool) String() string {
 	if i {
 		return "true"
 	}
 	return "false"
 }
 
-func MakeBOOL(b []byte) (Type, error) {
+func MakeBool(b []byte) (Type, error) {
 	if len(b) < 2 {
-		return BOOL(false), ErrType
+		return Bool(false), ErrType
 	}
 	switch binary.LittleEndian.Uint16(b[:2]) {
 	case 0xFFFF:
-		return BOOL(true), nil
+		return Bool(true), nil
 	case 0x0000:
-		return BOOL(false), nil
+		return Bool(false), nil
 	}
-	return BOOL(false), ErrType
+	return Bool(false), ErrType
 }
 
 type I1 int8
