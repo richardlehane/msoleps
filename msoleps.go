@@ -17,24 +17,23 @@
 // for simple typed metadata
 
 // Example:
-//    file, _ := os.Open("test/test.doc")
-//    defer file.Close()
-//    doc, err := mscfb.NewReader(file)
-//    if err != nil {
-//     log.Fatal(err)
-//    }
-//    props := msoleps.New()
-//    for entry, err := doc.Next(); err == nil; entry, err = doc.Next() {
-//      if msoleps.IsMSOLEPS(entry.Initial) {
-//        if oerr := props.Reset(doc); oerr != nil {
-//          log.Fatal(oerr)
-//        }
-//        for prop := range props.Property {
-//          fmt.Printf("Name: %s; Type: %s; Value: %v", prop.Name, prop.Type(), prop)
-//        }
-//      }
-//    }
-
+//   file, _ := os.Open("test/test.doc")
+//   defer file.Close()
+//   doc, err := mscfb.NewReader(file)
+//   if err != nil {
+//    log.Fatal(err)
+//   }
+//   props := msoleps.New()
+//   for entry, err := doc.Next(); err == nil; entry, err = doc.Next() {
+//     if msoleps.IsMSOLEPS(entry.Initial) {
+//       if oerr := props.Reset(doc); oerr != nil {
+//         log.Fatal(oerr)
+//       }
+//       for prop := range props.Property {
+//         fmt.Printf("Name: %s; Type: %s; Value: %v", prop.Name, prop.Type(), prop)
+//       }
+//     }
+//   }
 package msoleps
 
 import (
