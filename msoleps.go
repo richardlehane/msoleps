@@ -1,3 +1,40 @@
+// Copyright 2014 Richard Lehane. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Package msoleps implements a reader for Microsoft OLE Property Set Data structures,
+// (http://msdn.microsoft.com/en-au/library/dd942421.aspx) a generic persistence format
+// for simple typed metadata
+
+// Example:
+//    file, _ := os.Open("test/test.doc")
+//    defer file.Close()
+//    doc, err := mscfb.NewReader(file)
+//    if err != nil {
+//     log.Fatal(err)
+//    }
+//    props := msoleps.New()
+//    for entry, err := doc.Next(); err == nil; entry, err = doc.Next() {
+//      if msoleps.IsMSOLEPS(entry.Initial) {
+//        if oerr := props.Reset(doc); oerr != nil {
+//          log.Fatal(oerr)
+//        }
+//        for prop := range props.Property {
+//          fmt.Printf("Name: %s; Type: %s; Value: %v", prop.Name, prop.Type(), prop)
+//        }
+//      }
+//    }
+
 package msoleps
 
 import (
@@ -6,7 +43,6 @@ import (
 	"errors"
 	"io"
 
-	"github.com/richardlehane/msoleps/sets"
 	"github.com/richardlehane/msoleps/types"
 )
 
@@ -16,7 +52,7 @@ var (
 	ErrSeek   = errors.New("msoleps: can't seek backwards")
 )
 
-// check the first uint16 of an MSCFB name to see if this is a MSOLEPS stream
+// IsMSOLEPS checks the first uint16 character of an mscfb name to test if it is a MSOLEPS stream
 func IsMSOLEPS(i uint16) bool {
 	if i == 0x0005 {
 		return true
@@ -24,15 +60,14 @@ func IsMSOLEPS(i uint16) bool {
 	return false
 }
 
+// Reader is a reader for MS OLE Property Set Data structures
 type Reader struct {
 	Property []*Property
-	CLSID    types.Guid
-	SystemID uint32
 
-	b          *bytes.Buffer
-	buf        []byte
-	pSetStream *propertySetStream
-	pSets      [2]*propertySet
+	b   *bytes.Buffer
+	buf []byte
+	*propertySetStream
+	pSets [2]*propertySet
 }
 
 func New() *Reader {
@@ -58,24 +93,26 @@ func (r *Reader) start(rdr io.Reader) error {
 	}
 	r.buf = r.b.Bytes()
 	// read the header (property stream details)
-	r.pSetStream = &propertySetStream{}
-	if err := binary.Read(r.b, binary.LittleEndian, r.pSetStream); err != nil {
-		return ErrRead
+	pss, err := makePropertySetStream(r.buf)
+	if err != nil {
+		return err
 	}
 	// sanity checks to find obvious errors
 	switch {
-	case r.pSetStream.ByteOrder != 0xFFFE, r.pSetStream.Version > 0x0001, r.pSetStream.NumPropertySets > 0x00000002:
+	case pss.byteOrder != 0xFFFE, pss.version > 0x0001, pss.numPropertySets > 0x00000002:
 		return ErrFormat
 	}
+	r.propertySetStream = pss
 	// identify the property identifiers and offsets
-	ps, err := r.getPropertySet(r.pSetStream.OffsetA)
+	ps, err := r.getPropertySet(pss.offsetA)
 	if err != nil {
 		return err
 	}
 	plen := len(ps.idsOffs)
 	r.pSets[0] = ps
-	if r.pSetStream.NumPropertySets == 2 {
-		psb, err := r.getPropertySet(r.pSetStream.OffsetB)
+	var psb *propertySet
+	if pss.numPropertySets == 2 {
+		psb, err = r.getPropertySet(pss.offsetB)
 		if err != nil {
 			return err
 		}
@@ -83,10 +120,8 @@ func (r *Reader) start(rdr io.Reader) error {
 		plen += len(psb.idsOffs)
 	}
 	r.Property = make([]*Property, plen)
-	var dict map[uint32]string
-	if r.pSetStream.FmtidA == types.MustGuidFromString("{F29F85E0-4FF9-1068-AB91-08002B27B3D9}") {
-		dict = sets.SummaryInformation.Dict
-	} else {
+	dict, ok := propertySets[pss.fmtidA]
+	if !ok {
 		dict = ps.dict
 		if dict == nil {
 			dict = make(map[uint32]string)
@@ -95,10 +130,32 @@ func (r *Reader) start(rdr io.Reader) error {
 	for i, v := range ps.idsOffs {
 		r.Property[i] = &Property{}
 		r.Property[i].Name = dict[v.id]
-		t, _ := types.Evaluate(r.buf[int(v.offset+r.pSetStream.OffsetA):])
+		t, _ := types.Evaluate(r.buf[int(v.offset+pss.offsetA):])
 		if t.Type() == "CodeString" {
 			cs := t.(*types.CodeString)
 			cs.SetId(ps.code)
+			t = types.Type(cs)
+		}
+		r.Property[i].T = t
+	}
+	if pss.numPropertySets != 2 {
+		return nil
+	}
+	dict, ok = propertySets[pss.fmtidB]
+	if !ok {
+		dict = psb.dict
+		if dict == nil {
+			dict = make(map[uint32]string)
+		}
+	}
+	for i, v := range psb.idsOffs {
+		i += len(ps.idsOffs)
+		r.Property[i] = &Property{}
+		r.Property[i].Name = dict[v.id]
+		t, _ := types.Evaluate(r.buf[int(v.offset+pss.offsetB):])
+		if t.Type() == "CodeString" {
+			cs := t.(*types.CodeString)
+			cs.SetId(psb.code)
 			t = types.Type(cs)
 		}
 		r.Property[i].T = t
@@ -125,7 +182,54 @@ func (r *Reader) getPropertySet(o uint32) (*propertySet, error) {
 		}
 	}
 	if dictOff > 0 {
-		dictOff++ // just letting it compile - unfinished bit
+		var err error
+		pSet.dict, err = r.getDictionary(dictOff+o, pSet.code)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return pSet, nil
+}
+
+func (r *Reader) getDictionary(o uint32, code types.CodePageID) (map[uint32]string, error) {
+	b := r.buf[int(o):]
+	e := 4
+	if len(b) < e {
+		return nil, ErrFormat
+	}
+	num := int(binary.LittleEndian.Uint32(b[:e]))
+	if num == 0 {
+		return nil, nil
+	}
+	dict := make(map[uint32]string)
+	for i := 0; i < num; i++ {
+		if len(b[e:]) < 8 {
+			return nil, ErrFormat
+		}
+		id, l := binary.LittleEndian.Uint32(b[e:e+4]), binary.LittleEndian.Uint32(b[e+4:e+8])
+		var s types.Type
+		var err error
+		if code == 0x04B0 {
+			var pad int
+			if l%2 != 0 {
+				pad = 2
+			}
+			s, err = types.MakeUnicode(b[e+4:])
+			if err != nil {
+				return nil, ErrFormat
+			}
+			e = e + 8 + pad + int(l)*2
+		} else {
+			s, err = types.MakeCodeString(b[e+4:])
+			if err != nil {
+				return nil, ErrFormat
+			}
+			cs := s.(*types.CodeString)
+			cs.SetId((code))
+			s = cs
+			e = e + 8 + int(l)
+		}
+		dict[id] = s.String()
+	}
+	return dict, nil
 }

@@ -22,6 +22,6 @@ Example usage:
 
 Install with `go get github.com/richardlehane/msoleps`
 
-*I'm being developed and am not yet ready...*
+*Status: currently works for simple property sets like SummaryInformation. Not all types implemented yet (e.g. Vector, Array). Property set bags not implemented yet*
 
 [![Build Status](https://travis-ci.org/richardlehane/msoleps.png?branch=master)](https://travis-ci.org/richardlehane/msoleps)

@@ -1,7 +1,6 @@
 package msoleps
 
 import (
-	"fmt"
 	"os"
 	"testing"
 )
@@ -19,9 +18,6 @@ func testFile(t *testing.T, path string) *Reader {
 	if err != nil {
 		t.Errorf("Error opening file; Returns error: ", err)
 	}
-	for _, prop := range doc.Property {
-		fmt.Printf("%s: %s\n", prop.Name, prop)
-	}
 	return doc
 }
 
@@ -30,6 +26,9 @@ func TestDocSum(t *testing.T) {
 	if len(doc.Property) != 12 {
 		t.Error("Expecting 12 properties, got %d", len(doc.Property))
 	}
+	if doc.Property[1].String() != "Australian Broadcasting Corporation" {
+		t.Errorf("Expecting 'ABC' as second property, got %s", doc.Property[1])
+	}
 }
 
 func TestSum(t *testing.T) {
@@ -37,11 +36,17 @@ func TestSum(t *testing.T) {
 	if len(doc.Property) != 17 {
 		t.Error("Expecting 17 properties, got %d", len(doc.Property))
 	}
+	if doc.Property[5].String() != "Normal" {
+		t.Errorf("Expecting 'Normal' as sixth property, got %s", doc.Property[5])
+	}
 }
 
 func TestSum1(t *testing.T) {
 	doc := testFile(t, testSum1)
 	if len(doc.Property) != 3 {
 		t.Error("Expecting 3 properties, got %d", len(doc.Property))
+	}
+	if doc.Property[0].String() != "Mail" {
+		t.Errorf("Expecting 'Mail' as first property, got %s", doc.Property[0])
 	}
 }
