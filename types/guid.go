@@ -94,3 +94,7 @@ func MakeGuid(b []byte) (Type, error) {
 	}
 	return makeGuid(b, binary.LittleEndian), nil
 }
+
+func MustGuid(b []byte) Guid {
+	return makeGuid(b, binary.LittleEndian)
+}

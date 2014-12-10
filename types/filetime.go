@@ -55,8 +55,12 @@ func MakeFileTime(b []byte) (Type, error) {
 	if len(b) < 8 {
 		return FileTime{}, ErrType
 	}
+	return MustFileTime(b), nil
+}
+
+func MustFileTime(b []byte) FileTime {
 	return FileTime{
 		Low:  binary.LittleEndian.Uint32(b[:4]),
 		High: binary.LittleEndian.Uint32(b[4:8]),
-	}, nil
+	}
 }
