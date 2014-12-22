@@ -62,9 +62,8 @@ func IsMSOLEPS(i uint16) bool {
 // Reader is a reader for MS OLE Property Set Data structures
 type Reader struct {
 	Property []*Property
-
-	b   *bytes.Buffer
-	buf []byte
+	b        *bytes.Buffer
+	buf      []byte
 	*propertySetStream
 	pSets [2]*propertySet
 }
