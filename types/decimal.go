@@ -33,6 +33,10 @@ func (d Decimal) Type() string {
 	return "Decimal"
 }
 
+func (d Decimal) Length() int {
+	return 16
+}
+
 func (d Decimal) String() string {
 	h, l, b := new(big.Int), new(big.Int), new(big.Int)
 	l.SetUint64(d.low64)

@@ -37,6 +37,10 @@ func (d Date) Type() string {
 	return "Date"
 }
 
+func (d Date) Length() int {
+	return 8
+}
+
 func MakeDate(b []byte) (Type, error) {
 	if len(b) < 8 {
 		return Date(0), ErrType

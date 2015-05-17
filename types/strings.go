@@ -24,46 +24,45 @@ func nullTerminated(s string) string {
 	return s[:strings.Index(s, "\x00")]
 }
 
-type UnicodeString struct {
-	Length uint32
-	Chars  []uint16
-}
+type UnicodeString []uint16
 
 func (s UnicodeString) Type() string {
 	return "UnicodeString"
 }
 
+func (s UnicodeString) Length() int {
+	return 4 + len(s)*2
+}
+
 func (s UnicodeString) String() string {
-	if len(s.Chars) == 0 {
+	if len(s) == 0 {
 		return ""
 	}
-	return nullTerminated(string(utf16.Decode(s.Chars)))
+	return nullTerminated(string(utf16.Decode(s)))
 }
 
 func MakeUnicode(b []byte) (Type, error) {
 	if len(b) < 4 {
 		return UnicodeString{}, ErrType
 	}
-	s := UnicodeString{}
-	s.Length = binary.LittleEndian.Uint32(b[:4])
-	if s.Length == 0 {
-		return s, nil
+	l := int(binary.LittleEndian.Uint32(b[:4]))
+	if l == 0 {
+		return UnicodeString{}, nil
 	}
-	if len(b) < int(s.Length)+4 {
+	if len(b) < l*2+4 {
 		return UnicodeString{}, ErrType
 	}
-	s.Chars = make([]uint16, int(s.Length))
-	for i := range s.Chars {
+	s := make(UnicodeString, l)
+	for i := range s {
 		start := i*2 + 4
-		s.Chars[i] = binary.LittleEndian.Uint16(b[start : start+2])
+		s[i] = binary.LittleEndian.Uint16(b[start : start+2])
 	}
 	return s, nil
 }
 
 type CodeString struct {
-	id     CodePageID
-	Length uint32
-	Chars  []byte
+	id    CodePageID
+	Chars []byte
 }
 
 func (s *CodeString) SetId(i CodePageID) {
@@ -76,6 +75,10 @@ func (s *CodeString) Encoding() string {
 
 func (s *CodeString) Type() string {
 	return "CodeString"
+}
+
+func (s *CodeString) Length() int {
+	return 4 + len(s.Chars)
 }
 
 func (s *CodeString) String() string {
@@ -97,15 +100,15 @@ func MakeCodeString(b []byte) (Type, error) {
 		return &CodeString{}, ErrType
 	}
 	s := &CodeString{}
-	s.Length = binary.LittleEndian.Uint32(b[:4])
-	if s.Length == 0 {
+	l := int(binary.LittleEndian.Uint32(b[:4]))
+	if l == 0 {
 		return s, nil
 	}
-	if len(b) < int(s.Length)+4 {
+	if len(b) < l+4 {
 		return s, ErrType
 	}
-	s.Chars = make([]byte, int(s.Length))
-	copy(s.Chars, b[4:int(s.Length)+4])
+	s.Chars = make([]byte, l)
+	copy(s.Chars, b[4:l+4])
 	return s, nil
 }
 

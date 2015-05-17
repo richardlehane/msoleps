@@ -31,6 +31,10 @@ func (c Currency) Type() string {
 	return "Currency"
 }
 
+func (c Currency) Length() int {
+	return 8
+}
+
 func MakeCurrency(b []byte) (Type, error) {
 	if len(b) < 8 {
 		return Currency(0), ErrType

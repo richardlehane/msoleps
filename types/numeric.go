@@ -25,6 +25,10 @@ func (i Bool) Type() string {
 	return "Boolean"
 }
 
+func (i Bool) Length() int {
+	return 2
+}
+
 func (i Bool) String() string {
 	if i {
 		return "true"
@@ -55,6 +59,10 @@ func (i I1) String() string {
 	return strconv.Itoa(int(i))
 }
 
+func (i I1) Length() int {
+	return 1
+}
+
 func MakeI1(b []byte) (Type, error) {
 	if len(b) < 1 {
 		return I1(0), ErrType
@@ -66,6 +74,10 @@ type I2 int16
 
 func (i I2) Type() string {
 	return "Int16"
+}
+
+func (i I2) Length() int {
+	return 2
 }
 
 func (i I2) String() string {
@@ -85,6 +97,10 @@ func (i I4) Type() string {
 	return "Int32"
 }
 
+func (i I4) Length() int {
+	return 4
+}
+
 func (i I4) String() string {
 	return strconv.Itoa(int(i))
 }
@@ -100,6 +116,10 @@ type I8 int64
 
 func (i I8) Type() string {
 	return "Int64"
+}
+
+func (i I8) Length() int {
+	return 8
 }
 
 func (i I8) String() string {
@@ -119,6 +139,10 @@ func (i UI1) Type() string {
 	return "Uint8"
 }
 
+func (i UI1) Length() int {
+	return 1
+}
+
 func (i UI1) String() string {
 	return strconv.Itoa(int(i))
 }
@@ -134,6 +158,10 @@ type UI2 uint16
 
 func (i UI2) Type() string {
 	return "Uint16"
+}
+
+func (i UI2) Length() int {
+	return 2
 }
 
 func (i UI2) String() string {
@@ -153,6 +181,10 @@ func (i UI4) Type() string {
 	return "Uint32"
 }
 
+func (i UI4) Length() int {
+	return 4
+}
+
 func (i UI4) String() string {
 	return strconv.FormatUint(uint64(i), 10)
 }
@@ -170,6 +202,10 @@ func (i UI8) Type() string {
 	return "Uint64"
 }
 
+func (i UI8) Length() int {
+	return 8
+}
+
 func (i UI8) String() string {
 	return strconv.FormatUint(uint64(i), 10)
 }
@@ -183,12 +219,16 @@ func MakeUI8(b []byte) (Type, error) {
 
 type R4 float32
 
-func (i R4) Type() string {
+func (r R4) Type() string {
 	return "Float32"
 }
 
-func (i R4) String() string {
-	return strconv.FormatFloat(float64(i), 'f', -1, 32)
+func (r R4) Length() int {
+	return 4
+}
+
+func (r R4) String() string {
+	return strconv.FormatFloat(float64(r), 'f', -1, 32)
 }
 
 func MakeR4(b []byte) (Type, error) {
@@ -200,12 +240,16 @@ func MakeR4(b []byte) (Type, error) {
 
 type R8 float64
 
-func (i R8) Type() string {
+func (r R8) Type() string {
 	return "Float64"
 }
 
-func (i R8) String() string {
-	return strconv.FormatFloat(float64(i), 'f', -1, 64)
+func (r R8) Length() int {
+	return 8
+}
+
+func (r R8) String() string {
+	return strconv.FormatFloat(float64(r), 'f', -1, 64)
 }
 
 func MakeR8(b []byte) (Type, error) {

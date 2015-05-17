@@ -19,6 +19,8 @@ import (
 	"errors"
 )
 
+func init() { MakeTypes[VT_VARIANT] = MakeVariant }
+
 var (
 	ErrType        = errors.New("msoleps: error coercing byte stream to type")
 	ErrUnknownType = errors.New("msoleps: unknown type error")
@@ -27,7 +29,13 @@ var (
 type Type interface {
 	String() string
 	Type() string
+	Length() int
 }
+
+const (
+	vector uint16 = iota + 1
+	array
+)
 
 func Evaluate(b []byte) (Type, error) {
 	if len(b) < 4 {
@@ -38,13 +46,19 @@ func Evaluate(b []byte) (Type, error) {
 	if !ok {
 		return I1(0), ErrUnknownType
 	}
+	switch binary.LittleEndian.Uint16(b[2:4]) {
+	case vector:
+		return MakeVector(f, b[4:])
+	case array:
+		return MakeArray(f, b[4:])
+	}
 	return f(b[4:])
 }
 
 type TypeID uint16
 
 const (
-	VT_EMPTY TypeID = iota // 0x0000
+	VT_EMPTY TypeID = iota // 0x00
 	VT_NULL
 	VT_I2
 	VT_I4
@@ -67,11 +81,11 @@ const (
 	VT_I8
 	VT_UI8
 	VT_INT
-	VT_UINT  //0x0017
+	VT_UINT  //0x17
 	_        = iota + 5
-	VT_LPSTR //0x001E
+	VT_LPSTR //0x1E
 	VT_LPWSTR
-	VT_FILETIME = iota + 0x25 // 0x0040
+	VT_FILETIME = iota + 0x25 // 0x40
 	VT_BLOB
 	VT_STREAM
 	VT_STORAGE
@@ -80,7 +94,7 @@ const (
 	VT_BLOB_OBJECT
 	VT_CF
 	VT_CLSID
-	VT_VERSIONED_STREAM // 0x0049
+	VT_VERSIONED_STREAM // 0x49
 )
 
 type MakeType func([]byte) (Type, error)

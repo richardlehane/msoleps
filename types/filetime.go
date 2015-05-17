@@ -51,6 +51,10 @@ func (f FileTime) Type() string {
 	return "FileTime"
 }
 
+func (f FileTime) Length() int {
+	return 8
+}
+
 func MakeFileTime(b []byte) (Type, error) {
 	if len(b) < 8 {
 		return FileTime{}, ErrType
