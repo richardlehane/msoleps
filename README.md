@@ -14,7 +14,7 @@ Example usage:
         if oerr := props.Reset(doc); oerr != nil {
           log.Fatal(oerr)
         }
-        for prop := range props.Property {
+        for _, prop := range props.Property {
           fmt.Printf("Name: %s; Type: %s; Value: %v", prop.Name, prop.Type(), prop)
         }
       }
@@ -22,6 +22,6 @@ Example usage:
 
 Install with `go get github.com/richardlehane/msoleps`
 
-*Status: currently works for simple property sets like SummaryInformation. Not all types implemented yet (e.g. Vector, Array). Property set bags not implemented yet*
+*Status: currently works for simple property sets like SummaryInformation. Not all types implemented yet (e.g. Array). Property set bags not implemented yet*
 
 [![Build Status](https://travis-ci.org/richardlehane/msoleps.png?branch=master)](https://travis-ci.org/richardlehane/msoleps)

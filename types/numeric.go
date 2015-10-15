@@ -19,6 +19,20 @@ import (
 	"strconv"
 )
 
+type Null struct{}
+
+func (i Null) Type() string {
+	return "Null"
+}
+
+func (i Null) Length() int {
+	return 0
+}
+
+func (i Null) String() string {
+	return ""
+}
+
 type Bool bool
 
 func (i Bool) Type() string {

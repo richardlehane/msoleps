@@ -19,6 +19,7 @@ import (
 	"errors"
 )
 
+// MakeVariant is defined in vectorArray.go. It calls Evaluate, which refers to the MakeTypes map, so must add at runtime
 func init() { MakeTypes[VT_VARIANT] = MakeVariant }
 
 var (

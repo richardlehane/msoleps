@@ -125,9 +125,15 @@ func (r *Reader) start(rdr io.Reader) error {
 			dict = make(map[uint32]string)
 		}
 	}
+	dict = addDefaults(dict)
 	for i, v := range ps.idsOffs {
 		r.Property[i] = &Property{}
 		r.Property[i].Name = dict[v.id]
+		// don't try to evaluate dictionary property
+		if v.id == 0x00000000 {
+			r.Property[i].T = types.Null{}
+			continue
+		}
 		t, _ := types.Evaluate(r.buf[int(v.offset+pss.offsetA):])
 		if t.Type() == "CodeString" {
 			cs := t.(*types.CodeString)
@@ -146,10 +152,16 @@ func (r *Reader) start(rdr io.Reader) error {
 			dict = make(map[uint32]string)
 		}
 	}
+	dict = addDefaults(dict)
 	for i, v := range psb.idsOffs {
 		i += len(ps.idsOffs)
 		r.Property[i] = &Property{}
 		r.Property[i].Name = dict[v.id]
+		// don't try to evaluate dictionary property
+		if v.id == 0x00000000 {
+			r.Property[i].T = types.Null{}
+			continue
+		}
 		t, _ := types.Evaluate(r.buf[int(v.offset+pss.offsetB):])
 		if t.Type() == "CodeString" {
 			cs := t.(*types.CodeString)

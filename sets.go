@@ -16,9 +16,17 @@ package msoleps
 
 import "github.com/richardlehane/msoleps/types"
 
+func addDefaults(m map[uint32]string) map[uint32]string {
+	m[0x00000000] = "Dictionary"
+	m[0x00000001] = "CodePage"
+	m[0x80000000] = "Locale"
+	m[0x80000003] = "Behaviour"
+	return m
+
+}
+
 var propertySets map[types.Guid]map[uint32]string = map[types.Guid]map[uint32]string{
 	types.MustGuidFromString("{D5CDD502-2E9C-101B-9397-08002B2CF9AE}"): map[uint32]string{
-		0x00000001: "CodePage",
 		0x00000002: "Category",
 		0x00000003: "Presentation Format",
 		0x00000004: "Byte count",
@@ -47,7 +55,6 @@ var propertySets map[types.Guid]map[uint32]string = map[types.Guid]map[uint32]st
 		0x0000001D: "Document Version",
 	},
 	types.MustGuidFromString("{F29F85E0-4FF9-1068-AB91-08002B27B3D9}"): map[uint32]string{
-		0x00000001: "CodePage",
 		0x00000002: "Title",
 		0x00000003: "Subject",
 		0x00000004: "Author",
