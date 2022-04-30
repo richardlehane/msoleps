@@ -53,10 +53,7 @@ var (
 
 // IsMSOLEPS checks the first uint16 character of an mscfb name to test if it is a MSOLEPS stream
 func IsMSOLEPS(i uint16) bool {
-	if i == 0x0005 {
-		return true
-	}
-	return false
+	return i == 0x0005
 }
 
 // Reader is a reader for MS OLE Property Set Data structures
