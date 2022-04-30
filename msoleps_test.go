@@ -9,6 +9,7 @@ var (
 	testDocSum = "test/DocumentSummaryInformation"
 	testSum    = "test/SummaryInformation"
 	testSum1   = "test/SummaryInformation1"
+	testBad    = "test/SummaryInformationBad"
 )
 
 func testFile(t *testing.T, path string) *Reader {
