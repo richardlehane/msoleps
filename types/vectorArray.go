@@ -74,7 +74,7 @@ func (a Array) Length() int {
 	return 0
 }
 
-// not implemented yet
+// TODO: Array not implemented yet
 func MakeArray(f MakeType, b []byte) (Type, error) {
 	return Array{}, nil
 }
@@ -105,7 +105,7 @@ func MakeVariant(b []byte) (Type, error) {
 	}
 	f, ok := MakeTypes[id]
 	if !ok {
-		return I1(0), ErrUnknownType
+		Variant{}, ErrUnknownType
 	}
 	t, err := f(b[4:])
 	if err != nil {
