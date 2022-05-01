@@ -105,7 +105,7 @@ func MakeVariant(b []byte) (Type, error) {
 	}
 	f, ok := MakeTypes[id]
 	if !ok {
-		Variant{}, ErrUnknownType
+		return Variant{}, ErrUnknownType
 	}
 	t, err := f(b[4:])
 	if err != nil {
