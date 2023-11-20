@@ -115,17 +115,18 @@ func (r *Reader) start(rdr io.Reader) error {
 		plen += len(psb.idsOffs)
 	}
 	r.Property = make([]*Property, plen)
-	dict, ok := propertySets[pss.fmtidA]
-	if !ok {
-		dict = ps.dict
-		if dict == nil {
-			dict = make(map[uint32]string)
+	dicta := make(map[uint32]string)
+	if propertySet, ok := propertySets[pss.fmtidA]; ok {
+		for k, v := range propertySet {
+			dicta[k] = v
 		}
+	} else if ps.dict != nil {
+		dicta = ps.dict
 	}
-	dict = addDefaults(dict)
+	dicta = addDefaults(dicta)
 	for i, v := range ps.idsOffs {
 		r.Property[i] = &Property{}
-		r.Property[i].Name = dict[v.id]
+		r.Property[i].Name = dicta[v.id]
 		// don't try to evaluate dictionary property
 		if v.id == 0x00000000 {
 			r.Property[i].T = types.Null{}
@@ -142,18 +143,19 @@ func (r *Reader) start(rdr io.Reader) error {
 	if pss.numPropertySets != 2 {
 		return nil
 	}
-	dict, ok = propertySets[pss.fmtidB]
-	if !ok {
-		dict = psb.dict
-		if dict == nil {
-			dict = make(map[uint32]string)
+	dictb := make(map[uint32]string)
+	if propertySet, ok := propertySets[pss.fmtidB]; ok {
+		for k, v := range propertySet {
+			dictb[k] = v
 		}
+	} else if psb.dict != nil {
+		dictb = psb.dict
 	}
-	dict = addDefaults(dict)
+	dictb = addDefaults(dictb)
 	for i, v := range psb.idsOffs {
 		i += len(ps.idsOffs)
 		r.Property[i] = &Property{}
-		r.Property[i].Name = dict[v.id]
+		r.Property[i].Name = dictb[v.id]
 		// don't try to evaluate dictionary property
 		if v.id == 0x00000000 {
 			r.Property[i].T = types.Null{}
