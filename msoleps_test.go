@@ -2,6 +2,7 @@ package msoleps
 
 import (
 	"os"
+	"sync"
 	"testing"
 )
 
@@ -19,6 +20,20 @@ func testFile(t *testing.T, path string) *Reader {
 		t.Errorf("Error opening file; Returns error: %v", err)
 	}
 	return doc
+}
+
+func TestReader_concurrency(t *testing.T) {
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		_ = testFile(t, testDocSum)
+	}()
+	go func() {
+		defer wg.Done()
+		_ = testFile(t, testDocSum)
+	}()
+	wg.Wait()
 }
 
 func TestDocSum(t *testing.T) {
