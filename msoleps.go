@@ -17,23 +17,24 @@
 // for simple typed metadata
 
 // Example:
-//   file, _ := os.Open("test/test.doc")
-//   defer file.Close()
-//   doc, err := mscfb.NewReader(file)
-//   if err != nil {
-//    log.Fatal(err)
-//   }
-//   props := msoleps.New()
-//   for entry, err := doc.Next(); err == nil; entry, err = doc.Next() {
-//     if msoleps.IsMSOLEPS(entry.Initial) {
-//       if oerr := props.Reset(doc); oerr != nil {
-//         log.Fatal(oerr)
-//       }
-//       for _, prop := range props.Property {
-//         fmt.Printf("Name: %s; Type: %s; Value: %v", prop.Name, prop.Type(), prop)
-//       }
-//     }
-//   }
+//
+//	file, _ := os.Open("test/test.doc")
+//	defer file.Close()
+//	doc, err := mscfb.NewReader(file)
+//	if err != nil {
+//	 log.Fatal(err)
+//	}
+//	props := msoleps.New()
+//	for entry, err := doc.Next(); err == nil; entry, err = doc.Next() {
+//	  if msoleps.IsMSOLEPS(entry.Initial) {
+//	    if oerr := props.Reset(doc); oerr != nil {
+//	      log.Fatal(oerr)
+//	    }
+//	    for _, prop := range props.Property {
+//	      fmt.Printf("Name: %s; Type: %s; Value: %v", prop.Name, prop.Type(), prop)
+//	    }
+//	  }
+//	}
 package msoleps
 
 import (
@@ -45,10 +46,16 @@ import (
 	"github.com/richardlehane/msoleps/types"
 )
 
+// An implementation SHOULD enforce a limit on the total size of a PropertySetStream packet. This limit
+// MUST be at least 262,144 bytes, and for maximum interoperability SHOULD be 2,097,152 bytes.
+const sizeLimit = 2097152
+const numPropLimit = 174762 // sizeLimit / 12
+
 var (
 	ErrFormat = errors.New("msoleps: not a valid msoleps stream")
 	ErrRead   = errors.New("msoleps: error reading msoleps stream")
 	ErrSeek   = errors.New("msoleps: can't seek backwards")
+	ErrLimit  = errors.New("msoleps: invalid property count (too large)")
 )
 
 // IsMSOLEPS checks the first uint16 character of an mscfb name to test if it is a MSOLEPS stream
@@ -174,6 +181,9 @@ func (r *Reader) getPropertySet(o uint32) (*propertySet, error) {
 	pSet := &propertySet{}
 	pSet.size = binary.LittleEndian.Uint32(r.buf[int(o) : int(o)+4])
 	pSet.numProperties = binary.LittleEndian.Uint32(r.buf[int(o)+4 : int(o)+8])
+	if pSet.numProperties > numPropLimit {
+		return nil, ErrLimit
+	}
 	pSet.idsOffs = make([]propertyIDandOffset, int(pSet.numProperties))
 	var dictOff uint32
 	for i := range pSet.idsOffs {
